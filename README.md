@@ -42,3 +42,7 @@ At 3.1 s, one corner of the backbone vehicle is 7.4 cm outside the drivable area
 ### Low-speed stop
 
 Both plans preserve the low-speed stopping behavior and score 1.000 PDMS in this scene.
+
+![Low-speed stopping replay where both trajectories are correct](./03-low-speed.gif)
+
+</details>
