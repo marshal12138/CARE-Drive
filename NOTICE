@@ -1,0 +1,10 @@
+CARE-Drive: Coupled Alternating Refinement for Ego-trajectories
+
+This distribution includes adaptations of the Qwen3-VL wrapper, driving prompt,
+and MLP action head from CoWorld-VLA (AFARI-Research/CoWorld-VLA), distributed
+under the Apache License, Version 2.0. The original license is included in LICENSE.
+CARE-Drive adds future-token training, observation processing, coupled position
+and heading refinement, alternating optimization, and portable entry points.
+
+Qwen3-VL, V-JEPA2.1, NAVSIM, and the nuPlan devkit are external dependencies;
+their code, model weights, and datasets retain their respective licenses.

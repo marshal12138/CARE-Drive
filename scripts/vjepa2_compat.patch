@@ -1,0 +1,52 @@
+diff --git a/app/vjepa_2_1/models/utils/modules.py b/app/vjepa_2_1/models/utils/modules.py
+index 7b46ee8..c5a95b3 100644
+--- a/app/vjepa_2_1/models/utils/modules.py
++++ b/app/vjepa_2_1/models/utils/modules.py
+@@ -5,6 +5,7 @@
+ # LICENSE file in the root directory of this source tree.
+ 
+ import torch
++from contextlib import nullcontext
+ import torch.nn as nn
+ import torch.nn.functional as F
+ 
+@@ -290,7 +291,7 @@ class RoPEAttention(nn.Module):
+             k = k.to(dtype=v.dtype)
+ 
+         if self.use_sdpa:
+-            with torch.backends.cuda.sdp_kernel():
++            with torch.backends.cuda.sdp_kernel() if q.device.type == "cuda" else nullcontext():
+                 x = F.scaled_dot_product_attention(
+                     q, k, v, dropout_p=self.proj_drop_prob, is_causal=self.is_causal
+                 )
+@@ -343,7 +344,7 @@ class Attention(nn.Module):
+         q, k, v = qkv[0], qkv[1], qkv[2]
+ 
+         if self.use_sdpa:
+-            with torch.backends.cuda.sdp_kernel():
++            with torch.backends.cuda.sdp_kernel() if q.device.type == "cuda" else nullcontext():
+                 x = F.scaled_dot_product_attention(
+                     q, k, v, dropout_p=self.proj_drop_prob, is_causal=self.is_causal
+                 )
+@@ -490,7 +491,7 @@ class CrossAttention(nn.Module):
+         k, v = kv[0], kv[1]
+ 
+         if self.use_sdpa:
+-            with torch.backends.cuda.sdp_kernel():
++            with torch.backends.cuda.sdp_kernel() if q.device.type == "cuda" else nullcontext():
+                 q = F.scaled_dot_product_attention(q, k, v)
+         else:
+             xattn = (q @ k.transpose(-2, -1)) * self.scale
+diff --git a/app/vjepa_2_1/models/vision_transformer.py b/app/vjepa_2_1/models/vision_transformer.py
+index c8797fb..98d0822 100644
+--- a/app/vjepa_2_1/models/vision_transformer.py
++++ b/app/vjepa_2_1/models/vision_transformer.py
+@@ -74,7 +74,7 @@ class VisionTransformer(nn.Module):
+ 
+         self.use_activation_checkpointing = use_activation_checkpointing
+ 
+-        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth)]
++        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, depth, device="cpu")]
+ 
+         if self.is_video:
+             self.patch_embed = PatchEmbed3D(

@@ -1,0 +1,240 @@
+{
+  "B1-H-SFT": {
+    "component": "heading",
+    "task": "SFT",
+    "source": null,
+    "architecture": {
+      "ffn": 3072,
+      "heading_state_features": true,
+      "heads": 8,
+      "layers": 8,
+      "width": 768
+    },
+    "quantizer": {
+      "xy_range_m": [
+        5.0,
+        3.0
+      ],
+      "zero": 200,
+      "bos": 401
+    },
+    "seed": 20261019,
+    "epochs": 5,
+    "lr": 0.0001,
+    "weight_decay": 0.01,
+    "effective_batch": 128,
+    "beta": 0.04,
+    "epsilon": 0.2,
+    "advantage_std_floor": 0.01,
+    "group_size": 8,
+    "advantage_mode": "scene_std",
+    "reward_mode": "official_pdms",
+    "safe_ep_coefficient": 0.0,
+    "position_source": null,
+    "microbatch": 8
+  },
+  "B2-H-GRPO1": {
+    "component": "heading",
+    "task": "GRPO",
+    "source": "B1-H-SFT",
+    "architecture": {
+      "ffn": 3072,
+      "heading_state_features": true,
+      "heads": 8,
+      "layers": 8,
+      "width": 768
+    },
+    "quantizer": {
+      "xy_range_m": [
+        5.0,
+        3.0
+      ],
+      "zero": 200,
+      "bos": 401
+    },
+    "seed": 20261019,
+    "epochs": 5,
+    "lr": 1e-05,
+    "weight_decay": 0.0,
+    "effective_batch": 128,
+    "beta": 0.04,
+    "epsilon": 0.2,
+    "advantage_std_floor": 0.01,
+    "group_size": 8,
+    "advantage_mode": "scene_std",
+    "reward_mode": "official_pdms",
+    "safe_ep_coefficient": 0.0,
+    "position_source": null,
+    "microbatch": 8
+  },
+  "B3-H-GRPO2": {
+    "component": "heading",
+    "task": "GRPO",
+    "source": "B2-H-GRPO1",
+    "architecture": {
+      "ffn": 3072,
+      "heading_state_features": true,
+      "heads": 8,
+      "layers": 8,
+      "width": 768
+    },
+    "quantizer": {
+      "xy_range_m": [
+        5.0,
+        3.0
+      ],
+      "zero": 200,
+      "bos": 401
+    },
+    "seed": 20261019,
+    "epochs": 5,
+    "lr": 1e-05,
+    "weight_decay": 0.0,
+    "effective_batch": 128,
+    "beta": 0.04,
+    "epsilon": 0.2,
+    "advantage_std_floor": 0.01,
+    "group_size": 8,
+    "advantage_mode": "scene_std",
+    "reward_mode": "official_pdms",
+    "safe_ep_coefficient": 0.0,
+    "position_source": null,
+    "microbatch": 8
+  },
+  "C1-XY-SFT": {
+    "component": "position",
+    "task": "SFT",
+    "source": null,
+    "architecture": {
+      "width": 768,
+      "heads": 8,
+      "ffn": 3072,
+      "layers": 8
+    },
+    "quantizer": {
+      "xy_range_m": [
+        5.0,
+        3.0
+      ],
+      "zero": 200,
+      "bos": 401
+    },
+    "seed": 20261019,
+    "epochs": 5,
+    "lr": 0.0001,
+    "weight_decay": 0.01,
+    "effective_batch": 128,
+    "beta": 0.04,
+    "epsilon": 0.2,
+    "advantage_std_floor": 0.01,
+    "group_size": 8,
+    "advantage_mode": "global_rms_matched",
+    "reward_mode": "official_pdms",
+    "safe_ep_coefficient": 0.0,
+    "position_source": null,
+    "microbatch": 8,
+    "heading_source": "B3-H-GRPO2"
+  },
+  "C2-XY-P01": {
+    "component": "position",
+    "task": "GRPO",
+    "source": "C1-XY-SFT",
+    "architecture": {
+      "width": 768,
+      "heads": 8,
+      "ffn": 3072,
+      "layers": 8
+    },
+    "quantizer": {
+      "xy_range_m": [
+        5.0,
+        3.0
+      ],
+      "zero": 200,
+      "bos": 401
+    },
+    "seed": 20261019,
+    "epochs": 5,
+    "lr": 1e-05,
+    "weight_decay": 0.0,
+    "effective_batch": 128,
+    "beta": 0.04,
+    "epsilon": 0.2,
+    "advantage_std_floor": 0.01,
+    "group_size": 8,
+    "advantage_mode": "global_rms_matched",
+    "reward_mode": "official_pdms",
+    "safe_ep_coefficient": 0.0,
+    "position_source": null,
+    "microbatch": 8,
+    "heading_source": "B3-H-GRPO2"
+  },
+  "C3-XY-EP1": {
+    "component": "position",
+    "task": "GRPO",
+    "source": "C2-XY-P01",
+    "architecture": {
+      "width": 768,
+      "heads": 8,
+      "ffn": 3072,
+      "layers": 8
+    },
+    "quantizer": {
+      "xy_range_m": [
+        5.0,
+        3.0
+      ],
+      "zero": 200,
+      "bos": 401
+    },
+    "seed": 20261019,
+    "epochs": 5,
+    "lr": 1e-05,
+    "weight_decay": 0.0,
+    "effective_batch": 128,
+    "beta": 0.04,
+    "epsilon": 0.2,
+    "advantage_std_floor": 0.01,
+    "group_size": 8,
+    "advantage_mode": "global_rms_matched",
+    "reward_mode": "safe_ep_bonus",
+    "safe_ep_coefficient": 1.0,
+    "position_source": null,
+    "microbatch": 8,
+    "heading_source": "B3-H-GRPO2"
+  },
+  "D1-H-ADAPT": {
+    "component": "heading",
+    "task": "GRPO",
+    "source": "B3-H-GRPO2",
+    "architecture": {
+      "width": 768,
+      "heads": 8,
+      "ffn": 3072,
+      "layers": 8,
+      "heading_state_features": true
+    },
+    "quantizer": {
+      "xy_range_m": [
+        5.0,
+        3.0
+      ],
+      "zero": 200,
+      "bos": 401
+    },
+    "seed": 20261019,
+    "epochs": 5,
+    "lr": 1e-05,
+    "weight_decay": 0.0,
+    "effective_batch": 128,
+    "beta": 0.08,
+    "epsilon": 0.2,
+    "advantage_std_floor": 0.01,
+    "group_size": 8,
+    "advantage_mode": "greedy_baseline_rms_matched",
+    "reward_mode": "official_pdms",
+    "safe_ep_coefficient": 0.0,
+    "position_source": "C3-XY-EP1",
+    "microbatch": 8
+  }
+}

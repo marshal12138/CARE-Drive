@@ -1,0 +1,47 @@
+# Run commands from the repository root. Set CARE_DRIVE_DATA before loading this file.
+seed: 42
+device: npu
+train_manifest: ${CARE_DRIVE_DATA}/manifests/navtrain.jsonl
+sensor_root: ${CARE_DRIVE_DATA}/sensor_blobs/trainval
+teacher_cache: ${CARE_DRIVE_DATA}/cache/teacher
+expert_cache: ${CARE_DRIVE_DATA}/cache/expert_train.pt
+output_dir: runs/care-drive
+stage_config: configs/expert_stages.json
+model:
+  vlm_path: ${CARE_DRIVE_DATA}/models/Qwen3-VL-2B-Instruct
+  local_files_only: true
+  teacher_source: third_party/vjepa2
+  teacher_path: ${CARE_DRIVE_DATA}/models/vjepa2_1_vitg384.pt
+  teacher_sha256: null
+  teacher_dim: 1664
+  teacher_frames: 8
+  teacher_image_size: 384
+  teacher_pool: [4, 4, 6]
+  attention: sdpa
+  frame_width: 1024
+  frame_height: 512
+  freeze_visual: true
+  gradient_checkpointing: false
+  future_vision: true
+  future_supervision: true
+  num_jepa_steps: 4
+  num_jepa_tokens: 96
+  num_traj_tokens: 8
+  action_token_mode: independent
+  trajectory_head: mlp
+  visual_input_mode: video
+  visual_prompt_schema: visual_input_ablation_v1
+  use_vlm_autoreg_text_trajectory: false
+  eval_traj_mode: traj_token
+training:
+  effective_batch_size: 128
+  microbatch_size: 1
+  epochs: 5
+  cosine_weight: 0.5
+  language_lr: 0.00002
+  jepa_lr: 0.0001
+  trajectory_lr: 0.00001
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  gradient_clip: 1.0
+  sample_weighting: previous_endpoint_pdms_vs_gt_binary_mean1
