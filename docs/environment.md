@@ -10,13 +10,24 @@ git clone --branch v1.1 --depth 1 https://github.com/autonomousvision/navsim.git
 git clone --branch nuplan-devkit-v1.2 --depth 1 https://github.com/motional/nuplan-devkit.git third_party/nuplan-devkit
 python -m pip install -r requirements-navsim.txt
 python -m pip install --no-deps -e third_party/nuplan-devkit -e third_party/navsim
+```
+
+## Inference
+
+Download the complete CARE-Drive bundle using the [README command](../README.md#checkpoints). Its `A0-DYNAMIC-L1/assets/` directory supplies the architecture, trained query-token vocabulary, chat template, and image/video processing configuration. Set `device` in [configs/inference.yaml](../configs/inference.yaml). The loader reads local bundled assets and directly restores the trained weights; original Qwen weights and V-JEPA are not required. Keep `assets/` beside `epoch_005.pt` when moving the backbone checkpoint.
+
+## Training from scratch
+
+Install V-JEPA2.1 for future-feature target generation:
+
+```bash
 git clone https://github.com/facebookresearch/vjepa2.git third_party/vjepa2
 git -C third_party/vjepa2 apply ../../scripts/vjepa2_compat.patch
 ```
 
-The small V-JEPA compatibility patch keeps the drop-path schedule on CPU during meta-device construction and uses the CUDA attention context only on CUDA devices. It preserves the encoder parameters and attention operation.
+The compatibility patch keeps the drop-path schedule on CPU during meta-device construction and uses the CUDA attention context only on CUDA devices.
 
-Download [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) into the configured `model.vlm_path`. Download the **V-JEPA2.1 ViT-G/16 384** checkpoint from the [official model table](https://github.com/facebookresearch/vjepa2#models), and set `model.teacher_source` and `model.teacher_path`. Record the V-JEPA source commit; an optional `teacher_sha256` checks the checkpoint before loading. The teacher expects the original checkpoint's `encoder` state dictionary, not a Transformers-converted checkpoint.
+For backbone initialization during training, download [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct) into the configured `model.vlm_path`. Download the **V-JEPA2.1 ViT-G/16 384** checkpoint from the [official model table](https://github.com/facebookresearch/vjepa2#models), and set `model.teacher_source` and `model.teacher_path`. Record the V-JEPA source commit; an optional `teacher_sha256` checks the checkpoint before loading. The teacher expects the original checkpoint's `encoder` state dictionary, not a Transformers-converted checkpoint.
 
 Check that the official scorer imports before launching training:
 

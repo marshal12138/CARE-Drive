@@ -72,7 +72,9 @@ class ObservationProcessor:
     def __init__(self, config):
         self.config = config
         self.future_vision = config['model'].get('future_vision', True)
-        self.processor = AutoProcessor.from_pretrained(config['model']['vlm_path'], local_files_only=config['model'].get('local_files_only', True))
+        self.processor = AutoProcessor.from_pretrained(
+            config['model']['vlm_path'], local_files_only=config['model'].get('local_files_only', True),
+            fix_mistral_regex=False)
         self.token_ids = register_tokens(self.processor)
         self.action_token_mode = action_mode(config)
         if self.action_token_mode == 'independent':
@@ -150,7 +152,7 @@ def representation_loss(predicted, teacher, cosine_weight=0.5):
 
 
 class FutureVisionModel(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, *, load_pretrained=True):
         super().__init__()
         self.config = config
         cfg = config['model']
@@ -168,6 +170,7 @@ class FutureVisionModel(nn.Module):
             num_vggt_action_tokens=0, num_wan_action_tokens=0, num_traj_action_tokens=8,
             max_action_token_slots=4, torch_dtype=torch.bfloat16,
             gradient_checkpointing=cfg['gradient_checkpointing'], attn_implementation=cfg['attention'],
+            load_pretrained=load_pretrained, local_files_only=cfg.get('local_files_only', True),
         )
         for parameter in self.vlm.parameters():
             parameter.requires_grad_(False)
@@ -184,7 +187,12 @@ class FutureVisionModel(nn.Module):
         self.observation_processor = ObservationProcessor(config)
         self.action_token_mode = action_mode(config)
         if self.action_token_mode == 'independent':
-            initialize_independent(self.vlm)
+            if load_pretrained:
+                initialize_independent(self.vlm)
+            else:
+                # The checkpoint supplies every embedding row, including action queries.
+                register_independent(self.vlm.processor)
+                self.vlm.model.resize_token_embeddings(len(self.vlm.processor.tokenizer), mean_resizing=False)
         actual_ids = {s: self.vlm.processor.tokenizer.convert_tokens_to_ids(s) for s in self.observation_processor.token_ids}
         if actual_ids != self.observation_processor.token_ids:
             raise ValueError('Processor and model tokenizer identities differ')
@@ -194,7 +202,7 @@ class FutureVisionModel(nn.Module):
             with torch.random.fork_rng(devices=[]):
                 torch.random.default_generator.manual_seed(config['seed'])
                 self.future_readout = FutureReadout(hidden, readout['dim'], readout['num_heads']).float()
-        self.trainable_report = self.parameter_report()
+        self.trainable_report = self.parameter_report() if load_pretrained else None
 
     def train(self, mode=True):
         super().train(mode)

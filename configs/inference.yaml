@@ -1,0 +1,23 @@
+# Inference uses the assets/ directory beside the backbone checkpoint.
+seed: 42
+device: npu
+stage_config: configs/expert_stages.json
+model:
+  local_files_only: true
+  teacher_dim: 1664
+  attention: sdpa
+  frame_width: 1024
+  frame_height: 512
+  freeze_visual: true
+  gradient_checkpointing: false
+  future_vision: true
+  future_supervision: true
+  num_jepa_steps: 4
+  num_jepa_tokens: 96
+  num_traj_tokens: 8
+  action_token_mode: independent
+  trajectory_head: mlp
+  visual_input_mode: video
+  visual_prompt_schema: visual_input_ablation_v1
+  use_vlm_autoreg_text_trajectory: false
+  eval_traj_mode: traj_token

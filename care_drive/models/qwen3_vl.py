@@ -41,7 +41,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image as PILImage
-from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
+from transformers import AutoConfig, AutoModelForImageTextToText, AutoProcessor, Qwen3VLForConditionalGeneration
 from transformers.generation.utils import GenerateDecoderOnlyOutput
 
 from omegaconf import ListConfig
@@ -95,14 +95,23 @@ class Qwen3VLWrapper(nn.Module):
         torch_dtype=torch.bfloat16,
         gradient_checkpointing: bool = True,
         attn_implementation: str = "sdpa",
+        load_pretrained: bool = True,
+        local_files_only: bool = False,
     ):
         super().__init__()
 
-        self.model = Qwen3VLForConditionalGeneration.from_pretrained(
-            model_path,
-            attn_implementation=attn_implementation,
-            dtype=torch_dtype,
-        )
+        if load_pretrained:
+            self.model = Qwen3VLForConditionalGeneration.from_pretrained(
+                model_path, attn_implementation=attn_implementation,
+                dtype=torch_dtype, local_files_only=local_files_only,
+            )
+        else:
+            architecture = AutoConfig.from_pretrained(
+                model_path, local_files_only=True, trust_remote_code=False)
+            self.model = AutoModelForImageTextToText.from_config(
+                architecture, attn_implementation=attn_implementation,
+                dtype=torch_dtype, trust_remote_code=False,
+            )
         self.model.config.hidden_size = self.model.config.text_config.hidden_size
 
         if gradient_checkpointing:
@@ -110,7 +119,9 @@ class Qwen3VLWrapper(nn.Module):
                 gradient_checkpointing_kwargs={"use_reentrant": False}
             )
 
-        self.processor = AutoProcessor.from_pretrained(model_path)
+        self.processor = AutoProcessor.from_pretrained(
+            model_path, local_files_only=local_files_only or not load_pretrained,
+            fix_mistral_regex=False)  # Preserve the Qwen tokenizer's trained regex.
         self.processor.tokenizer.padding_side = "left"
 
         self.hidden_size = self.model.config.text_config.hidden_size
@@ -149,7 +160,7 @@ class Qwen3VLWrapper(nn.Module):
             + jepa_strs + vggt_strs + vggt_cam_strs + wan_strs
         )
         self.processor.tokenizer.add_tokens(extra_tokens, special_tokens=True)
-        self.model.resize_token_embeddings(len(self.processor.tokenizer))
+        self.model.resize_token_embeddings(len(self.processor.tokenizer), mean_resizing=load_pretrained)
 
         def _ids(strings: List[str]) -> List[int]:
             return [self.processor.tokenizer.convert_tokens_to_ids(s) for s in strings]

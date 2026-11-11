@@ -57,11 +57,11 @@ The final paper checkpoints are available on **[Hugging Face: maxiao123/CARE-Dri
 
 | Component | Checkpoint | Download size |
 | --- | --- | --- |
-| Predictive backbone | [A0-DYNAMIC-L1/epoch_005.pt](https://huggingface.co/maxiao123/CARE-Drive/resolve/main/A0-DYNAMIC-L1/epoch_005.pt) | 8.976 GB |
+| Predictive backbone | [A0-DYNAMIC-L1/ — checkpoint + assets](https://huggingface.co/maxiao123/CARE-Drive/tree/main/A0-DYNAMIC-L1) | 8.976 GB + 16 MB |
 | Position expert | [C3-XY-EP1/epoch_005.pt](https://huggingface.co/maxiao123/CARE-Drive/resolve/main/C3-XY-EP1/epoch_005.pt) | 0.314 GB |
 | Final heading expert | [D1-H-ADAPT/epoch_005.pt](https://huggingface.co/maxiao123/CARE-Drive/resolve/main/D1-H-ADAPT/epoch_005.pt) | 0.314 GB |
 
-After installing the environment below, download all three into the directory used by the inference commands:
+After installing the environment below, download the checkpoints together with their bundled assets into the directory used by the inference commands:
 
 ```bash
 hf download maxiao123/CARE-Drive \
@@ -71,7 +71,7 @@ hf download maxiao123/CARE-Drive \
 
 The files total approximately **9.60 GB**. Every model tensor and its original precision are preserved; optimizer, scheduler, RNG, and internal training metadata are omitted. File checksums and source-checkpoint identities are listed in the [checkpoint manifest](https://huggingface.co/maxiao123/CARE-Drive/blob/main/checkpoint_manifest.json).
 
-The current loader also needs the original Qwen3-VL-2B-Instruct model directory at `model.vlm_path`; it constructs the backbone there before loading the trained CARE-Drive state. V-JEPA2.1 is needed only for training.
+The backbone directory includes `assets/`: the model configuration, complete tokenizer, chat template, and image/video processor configuration (about 16 MB). The loader builds the architecture from these local assets and loads the CARE-Drive weights directly. **Inference requires only the CARE-Drive bundle; it does not download or load original Qwen weights or V-JEPA2.1.** Use the current code and [configs/inference.yaml](configs/inference.yaml). Existing users can run the download command again to fetch the added assets.
 
 ## Usage
 
@@ -79,7 +79,7 @@ The current loader also needs the original Qwen3-VL-2B-Instruct model directory 
 
 CARE-Drive uses **NAVSIM v1**, with OpenScene/nuPlan driving logs, camera images, and nuPlan maps. Download the data using the [NAVSIM v1 instructions](https://github.com/autonomousvision/navsim/blob/v1.1/docs/install.md) and use the official **navtrain / navtest** scene filters. Each input contains four historical frames from the front, left, and right cameras, ego pose history, velocity, acceleration, and a navigation command. The output is eight `(x, y, heading)` poses over four seconds, in the current ego rear-axle frame; positions use meters and headings use radians.
 
-The backbone starts from [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct). Backbone training also uses the **V-JEPA2.1 ViT-G/16, 384 px** teacher from the [official V-JEPA repository](https://github.com/facebookresearch/vjepa2), applied to eight future front-camera images. Future images and teacher features are training targets; inference uses historical observations.
+**For training from scratch**, the backbone starts from [Qwen3-VL-2B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct). Backbone training also uses the **V-JEPA2.1 ViT-G/16, 384 px** teacher from the [official V-JEPA repository](https://github.com/facebookresearch/vjepa2), applied to eight future front-camera images. Future images and teacher features are training targets; inference uses historical observations.
 
 Arrange your local data as follows and set `CARE_DRIVE_DATA` to its absolute path:
 
@@ -89,14 +89,14 @@ data/
 ├── navsim_logs/{trainval,test}/
 ├── sensor_blobs/{trainval,test}/
 ├── metric_cache/{navtrain,navtest}/
-├── models/
+├── models/                         # training from scratch only
 │   ├── Qwen3-VL-2B-Instruct/
 │   └── vjepa2_1_vitg384.pt
 ├── manifests/
 └── cache/
 ```
 
-Data, maps, and upstream pretrained weights are obtained separately. Download the trained CARE-Drive weights from the [Checkpoints](#checkpoints) section above. See [data preparation](docs/data.md) for metric caches, manifest export, and the distinction between the official splits and the paper's filtered training cohort.
+Data and maps are obtained separately; upstream Qwen and V-JEPA weights are needed for training from scratch. Download the trained CARE-Drive weights from the [Checkpoints](#checkpoints) section above. See [data preparation](docs/data.md) for metric caches, manifest export, and the distinction between the official splits and the paper's filtered training cohort.
 
 ### 2. Install the environment
 
@@ -112,7 +112,7 @@ python -m pip install -e .
 
 The code uses Transformers **4.57.6**, FP32 expert training, and BF16 backbone forward passes. The paper experiments ran on Ascend NPUs. CUDA device support is included, but full CUDA training has not been validated in this release. CPU is suitable for the small unit tests.
 
-Install NAVSIM v1 and the nuPlan devkit using the version-aware instructions in [environment setup](docs/environment.md); NAVSIM's older default dependency pins should not replace the required Qwen3-VL runtime. Clone V-JEPA2.1 into `third_party/vjepa2` for teacher-feature generation. Edit [configs/care_drive.yaml](configs/care_drive.yaml) to set `device`, model paths, data paths, and the output directory.
+Install NAVSIM v1 and the nuPlan devkit using the version-aware instructions in [environment setup](docs/environment.md); NAVSIM's older default dependency pins should not replace the required Qwen3-VL runtime. For inference, set your device in [configs/inference.yaml](configs/inference.yaml); the backbone locates its bundled assets beside the checkpoint. For training, clone V-JEPA2.1 into `third_party/vjepa2` for teacher-feature generation and edit [configs/care_drive.yaml](configs/care_drive.yaml) for model/data paths and the output directory.
 
 ```bash
 export CARE_DRIVE_DATA=/absolute/path/to/data
@@ -176,7 +176,7 @@ Download the trained A0 backbone, C3 position expert, and D1 heading expert from
 ```bash
 export CARE_DRIVE_PERFORMANCE_PREFLIGHT=/absolute/path/to/performance/inference.json
 python -m care_drive.infer \
-  --config configs/care_drive.yaml \
+  --config configs/inference.yaml \
   --manifest "$CARE_DRIVE_DATA/manifests/navtest.jsonl" \
   --sensor-root "$CARE_DRIVE_DATA/sensor_blobs/test" \
   --backbone runs/care-drive/A0-DYNAMIC-L1/epoch_005.pt \
