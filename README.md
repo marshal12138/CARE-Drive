@@ -22,6 +22,8 @@ Vision–language–action (VLA) models bring multimodal understanding and world
 
 ## 🎬 Qualitative demonstrations
 
+In these demos, **Backbone** shows the initial trajectory from our driving planner, initialized from Qwen3-VL-2B-Instruct and trained with imitation learning and future-feature supervision. **CARE-Drive** shows that trajectory after our two experts refine the waypoint positions and vehicle heading.
+
 ### Left turn around a stopped car
 
 At 3.8 s in the NAVSIM replay, the backbone overlaps the stopped car. CARE-Drive clears it by 0.46 m.
