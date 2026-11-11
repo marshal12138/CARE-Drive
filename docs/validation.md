@@ -11,11 +11,17 @@ Checked on 2026-11-11. This is a portable extraction of the paper's training and
 
 The CPU checks used Python 3.11.15, PyTorch 2.12.0+cpu, Transformers 4.57.6, and NumPy 1.26.4. They used synthetic inputs, with no benchmark data or trained research weights loaded.
 
+## Checkpoint release validation
+
+The final A0/C3/D1 checkpoints are published on [Hugging Face](https://huggingface.co/maxiao123/CARE-Drive). Each source file was checked against the SHA256 recorded for the accepted final evaluation. The export retains all **1,086 state-dict tensors** with identical names, shapes, values, and dtypes, while omitting optimizer, scheduler, RNG, and internal run metadata.
+
+The actual released weights passed strict loading through the published backbone and expert loaders on CPU. The backbone tokenizer contract matched, loaded tensors matched the exported states exactly, and one synthetic feature sample passed coupled expert generation. These checks establish export and loading compatibility; they do not rerun benchmark evaluation. File sizes, source identities, and exported SHA256 hashes are listed in the [checkpoint manifest](https://huggingface.co/maxiao123/CARE-Drive/blob/main/checkpoint_manifest.json).
+
 ## Scope remaining
 
 Full backbone training, V-JEPA target generation with the large checkpoint, real-data GRPO, distributed accelerator execution, and full navtest evaluation have not been rerun through these portable entry points. CUDA support has not been validated end to end. The paper's **88.8 PDMS** is an existing experimental result, not a score measured by these release checks.
 
-The repository contains code and stage recipes. It does not include the trained A0/C3/D1 checkpoints or the exact paper cohort manifests. Pretrained Qwen weights alone do not contain the trained CARE-Drive backbone or experts. Generate stage checkpoints with the documented chain; do not interpret a probe checkpoint as a completed stage. The current CLI starts each stage from its declared predecessor; it does not resume an interrupted stage's optimizer state.
+The repository contains code and stage recipes. Final A0/C3/D1 weights are published in [maxiao123/CARE-Drive](https://huggingface.co/maxiao123/CARE-Drive); exact paper cohort manifests remain unbundled. Pretrained Qwen weights alone do not contain the trained CARE-Drive backbone or experts. Download the released checkpoints or generate new ones with the documented chain; probe checkpoints represent diagnostic runs. The current CLI starts each stage from its declared predecessor; it does not resume an interrupted stage's optimizer state.
 
 Run local checks with:
 

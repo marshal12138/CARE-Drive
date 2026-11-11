@@ -46,7 +46,7 @@ python -m care_drive.prepare manifest \
 
 The exporter creates a neighboring summary with scene counts, scoreable counts, and the scene-filter hash. It validates observation structure and timestamps. Missing/corrupt images fail at loading rather than being silently replaced. Keep held-out validation logs separate from training by supplying your own scene-filter YAML with disjoint `log_names` / `tokens`.
 
-The paper used **92,772 backbone training scenes**, **92,614 scoreable expert training scenes**, and **12,146 navtest scenes**. A plain official-navtrain export is not the paper's internal filtered training/validation split. Exact cohort manifests and trained paper checkpoints are not bundled with this code release. Record your filters, manifests, and resulting counts when running new experiments; changing that cohort changes the reproduction setting.
+The paper used **92,772 backbone training scenes**, **92,614 scoreable expert training scenes**, and **12,146 navtest scenes**. A plain official-navtrain export is not the paper's internal filtered training/validation split. Exact cohort manifests are not included. The trained paper checkpoints are available in the [Hugging Face model repository](https://huggingface.co/maxiao123/CARE-Drive). Record your filters, manifests, and resulting counts when running new experiments; changing that cohort changes the reproduction setting.
 
 After installing the V-JEPA2.1 source and checkpoint, cache the teacher features:
 

@@ -51,6 +51,28 @@ Both plans preserve the low-speed stopping behavior and score 1.000 PDMS in this
 
 </details>
 
+## Checkpoints
+
+The final paper checkpoints are available on **[Hugging Face: maxiao123/CARE-Drive](https://huggingface.co/maxiao123/CARE-Drive)**. These three components form the system evaluated at **88.837 PDMS** on NAVSIM v1 navtest.
+
+| Component | Checkpoint | Download size |
+| --- | --- | --- |
+| Predictive backbone | [A0-DYNAMIC-L1/epoch_005.pt](https://huggingface.co/maxiao123/CARE-Drive/resolve/main/A0-DYNAMIC-L1/epoch_005.pt) | 8.976 GB |
+| Position expert | [C3-XY-EP1/epoch_005.pt](https://huggingface.co/maxiao123/CARE-Drive/resolve/main/C3-XY-EP1/epoch_005.pt) | 0.314 GB |
+| Final heading expert | [D1-H-ADAPT/epoch_005.pt](https://huggingface.co/maxiao123/CARE-Drive/resolve/main/D1-H-ADAPT/epoch_005.pt) | 0.314 GB |
+
+After installing the environment below, download all three into the directory used by the inference commands:
+
+```bash
+hf download maxiao123/CARE-Drive \
+  --include "A0-DYNAMIC-L1/*" "C3-XY-EP1/*" "D1-H-ADAPT/*" "checkpoint_manifest.json" \
+  --local-dir runs/care-drive
+```
+
+The files total approximately **9.60 GB**. Every model tensor and its original precision are preserved; optimizer, scheduler, RNG, and internal training metadata are omitted. File checksums and source-checkpoint identities are listed in the [checkpoint manifest](https://huggingface.co/maxiao123/CARE-Drive/blob/main/checkpoint_manifest.json).
+
+The current loader also needs the original Qwen3-VL-2B-Instruct model directory at `model.vlm_path`; it constructs the backbone there before loading the trained CARE-Drive state. V-JEPA2.1 is needed only for training.
+
 ## Usage
 
 ### 1. Dataset and pretrained models
@@ -74,7 +96,7 @@ data/
 └── cache/
 ```
 
-Data, maps, pretrained weights, and trained CARE-Drive checkpoints are downloaded or generated separately. See [data preparation](docs/data.md) for metric caches, manifest export, and the distinction between the official splits and the paper's filtered training cohort.
+Data, maps, and upstream pretrained weights are obtained separately. Download the trained CARE-Drive weights from the [Checkpoints](#checkpoints) section above. See [data preparation](docs/data.md) for metric caches, manifest export, and the distinction between the official splits and the paper's filtered training cohort.
 
 ### 2. Install the environment
 
@@ -149,7 +171,7 @@ GRPO and dynamic backbone weighting use **official NAVSIM v1 CPU scoring** in th
 
 ### 4. Inference and evaluation
 
-Use the trained A0 backbone, C3 position expert, and D1 heading expert. Export an observation-only navtest manifest using [data preparation](docs/data.md), then run greedy decoding:
+Download the trained A0 backbone, C3 position expert, and D1 heading expert from [Hugging Face](https://huggingface.co/maxiao123/CARE-Drive) using the command above, or use checkpoints produced by your own training run. Export an observation-only navtest manifest using [data preparation](docs/data.md), then run greedy decoding:
 
 ```bash
 export CARE_DRIVE_PERFORMANCE_PREFLIGHT=/absolute/path/to/performance/inference.json
