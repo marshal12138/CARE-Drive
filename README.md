@@ -5,7 +5,7 @@
 <h1 align="center">CARE-Drive: Component-wise Alternating Refinement of Ego-Trajectories for Vision-Language-Action Driving</h1>
 
 <p align="center">
-  <a href="https://github.com/chery-nextai">Xiao Ma</a><sup>*</sup>, <a href="https://github.com/chery-nextai">Yijun Chen</a><sup>*</sup>, <a href="https://github.com/chery-nextai">Zhiquan Hu</a>, <a href="https://github.com/chery-nextai">Jicheng Zhao</a>, <a href="https://github.com/chery-nextai">Yuming Li</a><sup>†</sup>, <a href="https://github.com/chery-nextai">Chuang Dai</a>
+  <a href="https://github.com/chery-nextai">Xiao Ma</a><sup>*</sup>, <a href="https://github.com/chery-nextai">Yijun Chen</a><sup>*</sup>, <a href="https://github.com/chery-nextai">Zhiquan Hu</a>, <a href="https://github.com/chery-nextai">Jicheng Zhao</a>, <a href="https://github.com/chery-nextai">Ran Ji</a>, <a href="https://github.com/chery-nextai">Yuming Li</a><sup>†</sup>, <a href="https://github.com/chery-nextai">Chuang Dai</a>
 </p>
 
 <p align="center">NEXTAI Research Institute, Chery Group.</p>
