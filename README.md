@@ -2,7 +2,7 @@
   <img src="./care-drive-logo.png" alt="CARE-Drive and Chery Next AI">
 </p>
 
-<h1 align="center">CARE-Drive: Coupled Alternating Refinement for Ego-trajectories</h1>
+<h1 align="center">CARE-Drive: Component-wise Alternating Refinement of Ego-Trajectories for Vision-Language-Action Driving</h1>
 
 <p align="center">
   <a href="https://github.com/chery-nextai">Xiao Ma</a><sup>*</sup>, <a href="https://github.com/chery-nextai">Yijun Chen</a><sup>*</sup>, <a href="https://github.com/chery-nextai">Zhiquan Hu</a>, <a href="https://github.com/chery-nextai">Jicheng Zhao</a>, <a href="https://github.com/chery-nextai">Yuming Li</a><sup>†</sup>, <a href="https://github.com/chery-nextai">Chuang Dai</a>
